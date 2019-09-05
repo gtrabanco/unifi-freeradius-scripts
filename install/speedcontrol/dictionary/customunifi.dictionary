@@ -1,0 +1,20 @@
+#
+# Custom attributes to make run the Unifi options in FreeRadius
+# This is not official, just custom so it can be overwritten by
+# any vendor anytime.
+#
+
+VENDOR		Customunifi			22000
+
+BEGIN-VENDOR	Customunifi
+
+ATTRIBUTE	Customunifi-Max-Speed-Upload-Data		1	integer
+ATTRIBUTE	Customunifi-Max-Speed-Download-Data		2	integer
+ATTRIBUTE	Customunifi-Max-Speed-Total-Data		3	integer
+
+#Configuration in reply
+ATTRIBUTE	Customunifi-Reduced-Speed-User-Group		100	string
+ATTRIBUTE	Customunifi-Speed-Control-Reset-Period		101	string
+ATTRIBUTE	Customunifi-Speed-User-Group			102	string
+
+END-VENDOR	Customunifi

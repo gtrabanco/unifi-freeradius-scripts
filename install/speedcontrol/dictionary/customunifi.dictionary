@@ -15,6 +15,7 @@ ATTRIBUTE	Customunifi-Max-Speed-Total-Data		3	integer
 #Configuration in reply
 ATTRIBUTE	Customunifi-Reduced-Speed-User-Group		100	string
 ATTRIBUTE	Customunifi-Speed-Control-Reset-Period		101	string
-ATTRIBUTE	Customunifi-Speed-User-Group			102	string
+ATTRIBUTE	Customunifi-Speed-User-Group			    102	string
+ATTRIBUTE   Customunifi-Prevail-Unifi                   103 string
 
 END-VENDOR	Customunifi

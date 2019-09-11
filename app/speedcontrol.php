@@ -22,6 +22,8 @@ $attr_max_speed_total_data     = getenv('MAX_SPEED_TOTAL_DATA');
 $attr_reduced_speed_usergroup = getenv('REDUCED_SPEED_USERGROUP');
 $attr_speed_reset_period = getenv('REDUCED_SPEED_RESET_PERIOD');
 
+$attr_prevail_unifi = getenv('PREVAIL_UNIFI');
+
 $reply_attribute_fixed_speed_usergroup = getenv('SPEED_USERGROUP');
 
 //Connect to database and Unifi
@@ -85,8 +87,14 @@ if (count($attr_speed_usergroup) > 0) {
     }
     //End
 
+    /**
+     * Commented because if we want a user that can navigate fatest than other but with limitations
+     * because if we want a user with unlimited traffic we can set the limits with value lower than 1
+     */
+    /*
     echo "ok";
     exit(0);
+    //*/
 }
 
 
@@ -106,7 +114,7 @@ if (isset($reduced_speed_group) && count($reduced_speed_group) < 1 && isset($spe
 }
 
 // Check if the reduced speed group exists in Unifi
-// Fir
+// First we get the values
 $usegroup_reduced_speed_name = $reduced_speed_group[0]['value'];
 $unifi_reduced_usergroup = filter_array_object_value($unifi_usegroups, 'name', $usegroup_reduced_speed_name);
 
@@ -118,11 +126,12 @@ if (count($unifi_reduced_usergroup) < 1) {
     exit(0);
 }
 
+// Depending if Customunifi-Prevail-Unifi is defined and a value considered true by PHP then
 // If the admin has defined a custom group for the device in the unifi we won't change
 // the speed. But if the group is the reduced speed we will continue the process.
-//var_dump($reduced_speed_group[0]['value'], //The name of the group for reduced speed group in attributes
-//      $unifi_reduced_usergroup[0]->name);  //Get the name from the list of usergroups in Unifi 
-if(isset($device_unifi_info->usergroup_id)
+if(isset($attr_prevail_unifi)
+  && $attr_prevail_unifi
+  && isset($device_unifi_info->usergroup_id)
   && strlen($device_unifi_info->usergroup_id) > 0
   && $device_unifi_info->usergroup_id !== $unifi_reduced_usergroup[0]->_id) { // This last check if the
                                     // defined usergroup is different from the downspeed usergroup

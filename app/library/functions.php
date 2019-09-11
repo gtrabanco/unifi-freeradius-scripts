@@ -223,16 +223,16 @@ function check_user_limits($username,
     $total_data      = $downloaded_data + $uploaded_data;
 
     // Check if the maximums are right before check them
-    $max_speed_download_data = empty($max_speed_download_data) || !$max_speed_download_data ? 0 : (int)$max_speed_download_data;
-    $max_speed_upload_data   = empty($max_speed_upload_data) || !$max_speed_upload_data ? 0 : (int)$max_speed_upload_data;
-    $max_speed_total_data    = empty($max_speed_total_data) || !$max_speed_total_data ? 0 : (int)$max_speed_total_data;
+    $max_speed_download_data = empty($max_speed_download_data) || !is_int($max_speed_download_data) ? 0 : (int)$max_speed_download_data;
+    $max_speed_upload_data   = empty($max_speed_upload_data) || !is_int($max_speed_upload_data) ? 0 : (int)$max_speed_upload_data;
+    $max_speed_total_data    = empty($max_speed_total_data) || !is_int($max_speed_total_data) ? 0 : (int)$max_speed_total_data;
 
     // Check if the user has overpassed the limits
     // We will check if the maximum is distinc of 0 because we do not want a false
     // positive if there is no limit for any kind of traffic
-    $check_download = $max_speed_download_data !== 0 && $max_speed_download_data < $downloaded_data;
-    $check_upload   = $max_speed_upload_data !== 0 && $max_speed_upload_data < $uploaded_data;
-    $check_total    = $total_data !== 0 && $max_speed_total_data < $total_data;
+    $check_download = $max_speed_download_data > 0 && $max_speed_download_data < $downloaded_data;
+    $check_upload   = $max_speed_upload_data > 0 && $max_speed_upload_data < $uploaded_data;
+    $check_total    = $total_data > 0 && $max_speed_total_data < $total_data;
 
     return  $check_download || $check_upload || $check_total;
 }
@@ -268,7 +268,7 @@ function get_clients_no_auth_by_users($client) {
     global $freeradius_clients;
 
     // The network which we will only want authenticated users devices
-    $radius_network = strtolower(trim(getenv('UNIFI_RADIUS_NETWORK')));
+    $radius_network = strtolower(trim(getenv('RADIUS_NETWORK_CHECK')));
     $client_essid   = isset($client->essid)?strtolower(trim($client->essid)):'';
     $client_network = isset($client->network)?strtolower(trim($client->network)):'';
     $client_mac     = strtoupper(trim(str_replace(':', '-', $client->mac))); // We can configure how controller

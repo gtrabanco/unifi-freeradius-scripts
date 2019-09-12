@@ -17,47 +17,56 @@ $dotenv = Dotenv\Dotenv::create(join(array(__DIR__, 'config'), DIRECTORY_SEPARAT
 $dotenv->load();
 
 // Connect to database and Unifi
-//$pdo = pdoConnectDb();
+$pdo = pdoConnectDb();
 $unifi_connection = loginUnifi();
-
-/**
- * This is for getting the password for a given wlan by API instead of enviroment var
- */
-/*/
-//Get the wlan configuration to know the radius profile
-$wlan_conf = $unifi_connection->list_wlanconf(); // check [i]->name === getenv('UNIFI_RADIUS_WLAN')
-$v = filter_array_object_value($wlan_conf, 'name', getenv('UNIFI_RADIUS_WLAN'));
-if(count($v) > 0) {
-    $radiusprofile_id = $v[0]->radiusprofile_id;
-} else {
-    die('Not possible to find the radiusprofile for the given network.');
-}
-
-// Get the radius configuration to get the radius password
-$radius_conf = filter_array_object_value($unifi_connection->list_radius_profiles(), '_id', $radiusprofile_id);
-
-if(count($radius_conf) > 0) {
-    $auth_servers = filter_array_object_value($radius_conf->auth_servers, 'server', getenv('RADIUS_SERVER_IP'));
-
-    if (count($auth_servers) > 0) {
-        $radpass = $auth_servers[0]->x_secret
-    } else {
-        die('There are no auth servers');
-    }
-} else {
-    die('Radius configuration could not be found.');
-}
-//*/
 
 $radpass = getenv('RADIUS_PASSWD');
 
 $devices = $unifi_connection->list_devices();
 
-function device_map($device) {
-    $sql = 'SELECT * FROM ' . getenv('CONFIG_DB_TBL_RADNAS') . ' WHERE nasname = ?';
+$unifi_ip_addresses = array_values(array_map(function($device) use ($pdo) {
+    //return $device->config_network->ip; //IP
+    return $pdo->quote($device->mac, PDO::PARAM_STR);
+}, $devices));
+
+
+// First we want to delete all NAS that are not active
+$sql = sprintf("DELETE FROM %s WHERE macaddress NOT IN (%s)", getenv('CONFIG_DB_TBL_RADNAS'), join(',', $unifi_ip_addresses));
+
+$stm = $pdo->prepare($sql);
+$stm -> execute([join(",",$unifi_ip_addresses)]);
+$restartFRService = (bool) $stm->rowCount(); // If this value is bigger than 0 we should reset Freeradius Service
+
+
+// Now we have to add the new NAS or update them if exists
+$sql  = 'INSERT IGNORE INTO ' . getenv('CONFIG_DB_TBL_RADNAS') . ' SET ';
+$sql .= ' macaddress = :mac, nasname = :ipaddr, shortname = :name, secret = :radpass ';
+$sql .= ' ON DUPLICATE KEY UPDATE nasname = :ipaddr, shortname = :name, secret = :radpass;';
+
+try {
+    $pdo->beginTransaction();
+    $stm = $pdo->prepare($sql);
+
+    foreach ($devices as $device) {
+        $stm->execute(array(
+            'ipaddr' => $device->config_network->ip,
+            'name'   => $device->name,
+            'radpass'=> getenv('RADIUS_PASSWD'),
+            'mac'    => str_replace(':', '-', strtoupper(trim($device->mac)))
+        ));
+    }
+
+    $pdo->commit();
+
+    // If we had not to restart FreeRadius Service previously, check if now we have to
+    // If we should do we not perform any check with the rowCount
+    $restartFRService = !$restartFRService ? (bool) $stm->rowCount(): $restartFRService;
+} catch (PDOException $e) {
+    $pdo->rollback();
 }
 
-// $device->name // nas shortname
-// $device->config_network->ip // nas address
-// $device->mac // to nas description
 
+
+if ($restartFRService > 0) {
+    @exec('/usr/sbin/service freeradius restart');
+}

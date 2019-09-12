@@ -1,0 +1,1 @@
+ALTER TABLE `nas` ADD `macaddress` VARCHAR(20) NOT NULL AFTER `nasname`, ADD UNIQUE (`macaddress`);

@@ -5,6 +5,10 @@
  * This script will check if there is any new NAS (Access Point or antenna)
  * and if there is any new add it to the database and restart freeradius
  * server.
+ * 
+ *          gabi.io
+ * 
+ * @author Gabriel Trabanco Llano <gtrabanco@fwok.org>
  */
 
 

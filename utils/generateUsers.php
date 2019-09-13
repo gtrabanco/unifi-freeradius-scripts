@@ -10,7 +10,7 @@ $chars        = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
 $strSeparator = ',';
 
 if ($argc < 3) {
-    echo "\nUsage: {$argv[0]} <prefix> <amount_of_users> [<user_len> [<password_len>  [<string_of_validchars>]]]\n";
+    echo "\nUsage: {$argv[0]} <prefix> <amount_of_users> [<password_len>  [<string_of_validchars>]]\n";
     echo "The prefix should be lower than the total len of user.\n";
     echo "This script will output a list to import in the daloRadius\n";
     exit;
@@ -18,11 +18,9 @@ if ($argc < 3) {
 
 $prefix = $argv[1];
 $amount_users = $argv[2];
-$userlen = isset($argv[3]) && $argv[3]? $argv[3]: $userlen;
-$userlen = $userlen - strlen($prefix);
 
-$passwordlen = isset($argv[4]) && $argv[4] ? $argv[4] : $passwordlen;
-$chars = isset($argv[5]) && $argv[5] ? $argv[5] : $chars;
+$passwordlen = isset($argv[3]) && $argv[3] ? $argv[3] : $passwordlen;
+$chars = isset($argv[4]) && $argv[4] ? $argv[4] : $chars;
 
 function generateRandomString($len, $chars) {
     $randomstring = '';
@@ -34,12 +32,16 @@ function generateRandomString($len, $chars) {
     return $randomstring;
 }
 
+function fill_user($number, $chars=3) {
+    return sprintf("%0${chars}.0d", $number);
+}
+
 
 $users = array();
 do {
 
     array_push($users, array( 
-        ($prefix . generateRandomString($userlen,$chars)),
+        ($prefix . fill_user($amount_users,4)),
         generateRandomString($passwordlen, $chars)
     ));
 

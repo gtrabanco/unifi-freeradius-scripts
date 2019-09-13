@@ -44,7 +44,7 @@ $restartFRService = (bool) $stm->rowCount(); // If this value is bigger than 0 w
 
 // Now we have to add the new NAS or update them if exists
 $sql  = 'INSERT IGNORE INTO ' . getenv('CONFIG_DB_TBL_RADNAS') . ' SET ';
-$sql .= ' macaddress = :mac, nasname = :ipaddr, shortname = :name, secret = :radpass ';
+$sql .= ' macaddress = :mac, nasname = :ipaddr, shortname = :name, secret = :radpass, type = :type ';
 $sql .= ' ON DUPLICATE KEY UPDATE nasname = :ipaddr, shortname = :name, secret = :radpass;';
 
 try {
@@ -56,6 +56,7 @@ try {
             'ipaddr' => $device->config_network->ip,
             'name'   => $device->name,
             'radpass'=> getenv('RADIUS_PASSWD'),
+            'type'   => getenv('RADIUS_NASTYPE '),
             'mac'    => str_replace(':', '-', strtoupper(trim($device->mac)))
         ));
     }

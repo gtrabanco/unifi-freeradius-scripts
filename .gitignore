@@ -1,7 +1,10 @@
-._*
+.*
 .DS_*
 .idea
 config.inc.php
 test
 .env
 env.remote
+
+# No ignore list
+!.gitignore

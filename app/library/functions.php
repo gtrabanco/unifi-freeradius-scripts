@@ -293,8 +293,6 @@ function get_clients_no_auth_by_users($client) {
  */
 function filter_array_key_value($array, $key, $value, $op='default') {
     return array_values(array_filter($array, function ($item) use($key, $value, $op){
-        $it = $item[$key];
-        echo "Evaluating: $it $op $value \n";
         switch($op) {
             case '===':
                 return $item[$key] === $value;

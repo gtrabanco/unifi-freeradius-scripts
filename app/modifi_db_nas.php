@@ -24,54 +24,61 @@ $dotenv->load();
 $pdo = pdoConnectDb();
 $unifi_connection = loginUnifi();
 
-$radpass = getenv('RADIUS_PASSWD');
 
+// The lisf of the devices
 $devices = $unifi_connection->list_devices();
 
-$unifi_ip_addresses = array_values(array_map(function($device) use ($pdo) {
+
+// We want a list of all NAS mac address
+$unifi_devices_mac_addresses = array_values(array_map(function($device) use ($pdo) {
     //return $device->config_network->ip; //IP
-    return $pdo->quote($device->mac, PDO::PARAM_STR);
+    return $pdo->quote(str_replace(':', '-', strtoupper(trim($device->mac))), PDO::PARAM_STR);
 }, $devices));
 
-
 // First we want to delete all NAS that are not active
-$sql = sprintf("DELETE FROM %s WHERE macaddress NOT IN (%s)", getenv('CONFIG_DB_TBL_RADNAS'), join(',', $unifi_ip_addresses));
+$sql = sprintf("DELETE FROM %s WHERE macaddress NOT IN (%s)", getenv('CONFIG_DB_TBL_RADNAS'), join(',', $unifi_devices_mac_addresses));
 
 $stm = $pdo->prepare($sql);
-$stm -> execute([join(",",$unifi_ip_addresses)]);
+$stm -> execute([join(",",$unifi_devices_mac_addresses)]);
 $restartFRService = (bool) $stm->rowCount(); // If this value is bigger than 0 we should reset Freeradius Service
 
 
-// Now we have to add the new NAS or update them if exists
-$sql  = 'INSERT IGNORE INTO ' . getenv('CONFIG_DB_TBL_RADNAS') . ' SET ';
-$sql .= ' macaddress = :mac, nasname = :ipaddr, shortname = :name, secret = :radpass, type = :type ';
-$sql .= ' ON DUPLICATE KEY UPDATE nasname = :ipaddr, shortname = :name, secret = :radpass;';
+// Insert or modify the NAS
+$sql = 'INSERT INTO ' . getenv('CONFIG_DB_TBL_RADNAS') . ' SET ';
+$sql .= ' macaddress = :mac, nasname = :ipaddr, shortname = :name, secret = :secret, type = :type ';
+$sql .= ' ON DUPLICATE KEY UPDATE nasname = :ipaddr, shortname = :name, secret = :secret, type = :type';
 
 try {
     $pdo->beginTransaction();
     $stm = $pdo->prepare($sql);
 
     foreach ($devices as $device) {
+        modify_auto_increment_behaviour(); // If is there any previous wrong behaviour, modify it
         $stm->execute(array(
             'ipaddr' => $device->config_network->ip,
             'name'   => $device->name,
-            'radpass'=> getenv('RADIUS_PASSWD'),
-            'type'   => getenv('RADIUS_NASTYPE '),
+            'secret' => getenv('RADIUS_PASSWD'),
+            'type'   => getenv('RADIUS_NASTYPE'),
             'mac'    => str_replace(':', '-', strtoupper(trim($device->mac)))
         ));
+
+        // Check if it had or, if not, it has to restart the FR Service
+        $restartFRService = !$restartFRService ?
+            ((bool) $stm->rowCount() > 1 || (int)$pdo->lastInsertId() > 0):
+            $restartFRService;
     }
 
     $pdo->commit();
 
-    // If we had not to restart FreeRadius Service previously, check if now we have to
-    // If we should do we not perform any check with the rowCount
-    $restartFRService = !$restartFRService ? (bool) $stm->rowCount(): $restartFRService;
+    
 } catch (PDOException $e) {
     $pdo->rollback();
+    //var_dump($e);
 }
 
 
-
+/*
 if ($restartFRService > 0) {
     @exec('/usr/sbin/service freeradius restart');
 }
+//*/

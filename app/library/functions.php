@@ -59,7 +59,8 @@ function pdoConnectDb() {
             $dbPasswd, 
             array(
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::MYSQL_ATTR_FOUND_ROWS => true
             ));
     } catch (Exception $e) {
         echo $e->getMessage();
@@ -365,3 +366,23 @@ function check_service_online($ipaddr, $port) {
 }
 
 
+function modify_auto_increment_behaviour() {
+    // Fix auto increment id. It is not a bug, is a expected behaviour but we do not want
+    // to increment the auto_increment value (id) every time we call this script.
+    // If we execute this script every minute with a high number of antennas could be a problem
+    //
+    // More about this:
+    //      https://stackoverflow.com/questions/14383503/on-duplicate-key-update-same-as-insert
+
+    global $pdo;
+
+    $sql = sprintf('SELECT IFNULL((SELECT IFNULL(NULLIF(id,0),1) as nextid FROM %s ORDER BY id DESC LIMIT 1),1)', getenv('CONFIG_DB_TBL_RADNAS'));
+
+    $stm = $pdo->query($sql);
+    $nextId = $stm->fetchColumn(0);
+
+    $sql = sprintf('ALTER TABLE %s AUTO_INCREMENT=%s', getenv('CONFIG_DB_TBL_RADNAS'), $nextId);
+    $pdo->query($sql);
+
+    return;
+}

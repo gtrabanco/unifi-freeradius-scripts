@@ -77,7 +77,7 @@ try {
 }
 
 
-/*
+//* When development this should be commented
 if ($restartFRService > 0) {
     @exec('/usr/sbin/service freeradius restart');
 }

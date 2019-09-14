@@ -77,7 +77,7 @@ try {
 }
 
 
-/*
+//*
 if ($restartFRService > 0) {
     @exec('/usr/sbin/service freeradius restart');
 }

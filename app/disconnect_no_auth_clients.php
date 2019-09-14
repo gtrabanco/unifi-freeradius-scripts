@@ -24,7 +24,7 @@ $freeradius_clients = get_freeradius_connected_users();
 $unifi_missed_connected_clients = array_values(array_filter($unifi_connection->list_clients(), 'get_clients_no_auth_by_users'));
 
 if(count($unifi_missed_connected_clients) > 0) {
-    array_map(function($client){
+    array_map(function($client) use ($unifi_connection) {
         $unifi_connection->reconnect_sta($client->mac);
     }, $unifi_missed_connected_clients);
 }
@@ -35,5 +35,5 @@ $pdo = null;
 // Add following content to daloRadius crontab, disable and enable it
 // File of crontab: /var/www/daloradius/contrib/scripts/dalo-crontab
 // Add the second wihtout "#"
-# Every 5 minutes check if there is unauthorized devices in network
-#*/5 * * * * /usr/bin/php $DALO_DIR/maintenance/vendor/unifi-freeradius/app/disconnect_no_auth_clients.php 2>&1 >/dev/null
+# Every minute check if there is unauthorized devices in network
+#* * * * * /usr/bin/php $DALO_DIR/maintenance/vendor/unifi-freeradius/app/disconnect_no_auth_clients.php 2>&1 >/dev/null

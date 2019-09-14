@@ -76,8 +76,9 @@ if (count($attr_speed_usergroup) > 0) {
     // usergroup in the Radius
     //
     // First get the usegroup_id for the given group; parenthesis is just to make it clearer
-    $unifi_user_usergroup = filter_array_object_value($unifi_usegroups, 'name', ($attr_speed_usergroup['value'][0]))[0];
+    $unifi_user_usergroup = filter_array_object_value($unifi_usegroups, 'name', ($attr_speed_usergroup[0]['value']))[0];
 
+    print_r($unifi_user_usergroup);
     $user_id  = $device_unifi_info->_id;
     $group_id = $unifi_user_usergroup->_id;
 
@@ -99,6 +100,9 @@ if (count($attr_speed_usergroup) > 0) {
 
 
 /*********** HERE BEGIN THE POSSIBLE BANNED USERS *********/
+
+// Control variable to know if the user has a fixed speed group
+$group_id = ''; //Default group is an empty group
 
 // If there is no any group for reduced speed skip the checks
 $reduced_speed_group = filter_array_key_value($user_reply_attributes, 'attribute', $attr_reduced_speed_usergroup);
@@ -122,14 +126,13 @@ $unifi_reduced_usergroup = filter_array_object_value($unifi_usegroups, 'name', $
 if (count($unifi_reduced_usergroup) < 1) {
     //die("You should configure your unifi with the given usegroup: ${usegroup_reduced_speed_name}");
 
-    echo "ok";
-    exit(0);
-}
+    $group_id = '';
 
+// This comment is for the else if
 // Depending if Customunifi-Prevail-Unifi is defined and a value considered true by PHP then
 // If the admin has defined a custom group for the device in the unifi we won't change
 // the speed. But if the group is the reduced speed we will continue the process.
-if(isset($attr_prevail_unifi)
+} else if(isset($attr_prevail_unifi)
   && $attr_prevail_unifi
   && isset($device_unifi_info->usergroup_id)
   && strlen($device_unifi_info->usergroup_id) > 0
@@ -139,9 +142,7 @@ if(isset($attr_prevail_unifi)
                                     // user must be in the default group. Because maybe we are in a
                                     // different billing period
     //die('The user has a custom group so we will not change the speed group for the device.');
-
-    echo "ok";
-    exit(0);
+    $group_id = $device_unifi_info->usergroup_id;
 }
 
 // Check if the user has any limit (upload, download or total)
@@ -158,19 +159,14 @@ $user_limits = check_user_limits($FRUsername, $user_max_speed_download_data, $us
 if ( $user_limits ) {
     
     // User is over the limits
-    //*
-    // First get the usegroup_id for the given group; parenthesis is just to make it clearer
+    // Set the group id for over the limits
 
     $group_id = $unifi_reduced_usergroup[0]->_id;
-    $user_id  = $device_unifi_info->_id;
+} 
 
-    // Set the usegroup with reduced speed
-    $unifi_connection->set_usergroup($user_id, $group_id);
-} else {
-    // User did not download/upload over the limits should be in the default group
-    $user_id  = $device_unifi_info->_id;
-    $unifi_connection->set_usergroup($user_id, '');
-}
+// Set the speed for this user
+$user_id  = $device_unifi_info->_id;
+$unifi_connection->set_usergroup($user_id, $group_id);
 
 $pdo = null; // Good bye MySQL!
 echo "ok";

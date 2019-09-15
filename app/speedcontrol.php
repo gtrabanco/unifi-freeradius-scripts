@@ -159,25 +159,11 @@ exit(0); // No one can include this file, it will be used as a binary
  * Debemos agregar la siguiente configuración:
  * 
  *    update control {
- *        Tmp-Integer-0 = `/usr/bin/php -f /var/www/daloradius/contrib/scripts/maintenance/vendor/unifi-freeradius/speedcontrol.php`
+ *        Tmp-Integer-0 = `/usr/bin/php -f /var/www/daloradius/contrib/scripts/maintenance/vendor/unifi-freeradius-scripts/app/speedcontrol.php`
  *    }
  * 
  * 
  * 
  * Ayuda exec de Freeradius:
  * https://networkradius.com/doc/3.0.10/raddb/mods-available/exec.html
- */
-
-
- /*
-            start {
-                update {
-                    Tmp-Integer-0 = `/usr/bin/php -f /var/www/daloradius/contrib/scripts/maintenance/vendor/unifi-freeradius/speedcontrol.php`
-                }
-            }
-            interim-update {
-                update {
-                    Tmp-Integer-0 = `/usr/bin/php -f /var/www/daloradius/contrib/scripts/maintenance/vendor/unifi-freeradius/speedcontrol.php`
-                }
-            }
  */

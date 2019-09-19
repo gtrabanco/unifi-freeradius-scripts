@@ -67,6 +67,26 @@ if (!$device_unifi_info) {
 }
 
 
+// <set_radius_user_in_unifi>
+// Set the user the user that is using the device in the unifi
+// First is there is no name, we will use the hostname after the user
+$previousDeviceName = (isset($device_unifi_info->name)?$device_unifi_info->name:$device_unifi_info->hostname);
+
+// The format to set the user and the name we have already assigned in unifi if there is or
+// the hostname if not. Note if there is any other user that use the device we will get a
+// big name with all users in unifi. This is not a good advantage...
+$nameFmt = "| %s |"; // To comparison
+$finalNameFmt = $nameFmt . " - %s"; // How the name will look like in unifi
+
+$fmtUsername = sprintf($nameFmt, $FRUsername); // Comparison Name
+
+if (!preg_match("/(${fmtUsername}){1}/is", $previousDeviceName)) { // The user was no set previously
+    $unifi_connection -> set_sta_name($device_unifi_info->_id, sprintf($finalNameFmt, $FRUsername, $previousDeviceName));
+}
+// </set_radius_user_in_unifi>
+
+
+// <fixed_usergroup_by_radius>
 // If the user has a specific usergroup for speed in Radius apply it and end
 //$attr_speed_usergroup = filter_array_key_value($user_reply_attributes, $attr, $attr_name);
 $attr_speed_usergroup = filter_array_key_value($user_reply_attributes, 'attribute', $reply_attribute_fixed_speed_usergroup);
@@ -81,10 +101,13 @@ if (count($attr_speed_usergroup) > 0) {
     $unifi_user_usergroup = filter_array_object_value($unifi_usegroups, 'name', ($attr_speed_usergroup[0]['value']))[0];
     $group_id = $unifi_user_usergroup->_id;
 }
+// </fixed_usergroup_by_radius>
 
 
 /*********** HERE BEGIN THE POSSIBLE BANNED USERS *********/
 
+
+// <check_if_user_has_reduced_speed_usergroup>
 
 // If there is no any group for reduced speed skip the checks
 $reduced_speed_group = filter_array_key_value($user_reply_attributes, 'attribute', $attr_reduced_speed_usergroup);
@@ -98,7 +121,9 @@ if (isset($reduced_speed_group) && count($reduced_speed_group) < 1 && isset($spe
     echo "ok";
     exit(0);
 }
+// </check_if_user_has_reduced_speed_usergroup>
 
+// <check_if_user_reduced_speed_usergroup_exists_in_unifi_and_limits>
 // Check if the reduced speed group exists in Unifi
 // First we get the values
 $usegroup_reduced_speed_name = isset($reduced_speed_group) && isset($reduced_speed_group[0])?$reduced_speed_group[0]['value']:null;
@@ -145,9 +170,13 @@ if(count($unifi_reduced_usergroup) > 1
     } 
 
 }
+// </check_if_user_reduced_speed_usergroup_exists_in_unifi_and_limits>
+
+// <set_the_final_usergroup>
 // Set the speed for this user
 $user_id  = $device_unifi_info->_id;
 $unifi_connection->set_usergroup($user_id, $group_id);
+// </set_the_final_usergroup>
 
 $pdo = null; // Good bye MySQL!
 echo "ok";

@@ -3,6 +3,8 @@
 .idea
 config.inc.php
 test
+testunifi.php
+testdb.php
 .env
 env.remote
 

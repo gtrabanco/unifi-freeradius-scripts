@@ -78,9 +78,9 @@ $previousDeviceName = (isset($device_unifi_info->name)?$device_unifi_info->name:
 $nameFmt = "| %s |"; // To comparison
 $finalNameFmt = $nameFmt . " - %s"; // How the name will look like in unifi
 
-$fmtUsername = sprintf($nameFmt, $FRUsername); // Comparison Name
+$fmtUsername = preg_quote(sprintf($nameFmt, $FRUsername)); // Comparison Name
 
-if (!preg_match("/(${fmtUsername}){1}/is", $previousDeviceName)) { // The user was no set previously
+if (!preg_match("/(${fmtUsername})+/is", $previousDeviceName)) { // The user was no set previously
     $unifi_connection -> set_sta_name($device_unifi_info->_id, sprintf($finalNameFmt, $FRUsername, $previousDeviceName));
 }
 // </set_radius_user_in_unifi>

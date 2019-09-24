@@ -211,9 +211,9 @@ CREATE TRIGGER before_radacct_update
                 NEW.username,
                 NEW.realm,
                 NEW.acctupdatetime,
-                (NEW.acctsessiontime - OLD.acctsessiontime),
-                (NEW.acctinputoctets - OLD.acctinputoctets),
-                (NEW.acctoutputoctets - OLD.acctoutputoctets));
+                ABS(NEW.acctsessiontime - OLD.acctsessiontime),
+                ABS(NEW.acctinputoctets - OLD.acctinputoctets),
+                ABS(NEW.acctoutputoctets - OLD.acctoutputoctets));
 
     END //
 

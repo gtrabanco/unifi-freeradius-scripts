@@ -20,8 +20,9 @@ $device_mac = str_replace('"', '', getenv('CALLING_STATION_ID')); // Unifi can s
 
 //*
 // Unifi connected devices and freeradius users
+$clients = $unifi_connection->list_clients();
 $freeradius_clients = get_freeradius_connected_users();
-$unifi_missed_connected_clients = array_values(array_filter($unifi_connection->list_clients(), 'get_clients_no_auth_by_users'));
+$unifi_missed_connected_clients = array_values(array_filter($clients, 'get_clients_no_auth_by_users'));
 
 if(count($unifi_missed_connected_clients) > 0) {
     array_map(function($client) use ($unifi_connection) {
@@ -29,6 +30,18 @@ if(count($unifi_missed_connected_clients) > 0) {
     }, $unifi_missed_connected_clients);
 }
 
+// Get the bad users in other networks and reset they speed limit
+$speed_groups_reset = explode(',', getenv('RADIUS_BAD_USERS_SPEED'));
+
+$unifi_bad_users_other_network = array_values(array_filter($clients, 'check_clients_no_radius_network'));
+
+if(count($unifi_bad_users_other_network) > 0) {
+    array_map(function($client) use ($unifi_connection) {
+        $unifi_connection->set_usergroup($client->_id, '');
+    });
+}
+
+$clients = null;
 $unifi_connect = null;
 $pdo = null;
 

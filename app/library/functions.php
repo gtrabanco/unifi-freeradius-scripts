@@ -260,7 +260,7 @@ function get_freeradius_connected_users() {
 }
 
 /**
- * Get the clients in unifi that are not identified in Freeradius. Mean, if
+ * Check the clients in unifi that are not identified in Freeradius. Mean, if
  * there is any device which has not done a logon by a user.
  * @var $client the Unifi client object
  * @return boolean
@@ -282,67 +282,114 @@ function get_clients_no_auth_by_users($client) {
         && !in_array($client_mac, $freeradius_clients));
 }
 
+/**
+ * Check the clients that are not in the radius network
+ * @var $client The Unifi client
+ * @return boolean
+ */
+function check_clients_no_radius_network($client) {
+    $radius_network = strtolower(trim(getenv('RADIUS_NETWORK_CHECK')));
+
+    $client_essid   = isset($client->essid)?strtolower(trim($client->essid)):'';
+    $client_network = isset($client->network)?strtolower(trim($client->network)):'';
+
+    return strlen($client_essid) > 0 && $client_essid !== $radius_network
+        || strlen($client_network) > 0 && $client_network !== $radius_network;
+}
 
 /**
- * Function to filter an arrar of arrays by value of a given key
+ * Function to filter an arrar of arrays by value of a given key.
+ * If the variable does not exists then it takes the value "null".
  * @var $array Array of arrays to search
  * @var $key the subindex key to compare with $value
  * @var $value the expected value
  * @var $op the operator to compare with. It should be as string
+ * @var $cb Callback for the value of the $item[$key]
  * @return boolean
  */
-function filter_array_key_value($array, $key, $value, $op='default') {
+function filter_array_key_value($array, $key, $value, $op='default', $cb = null) {
     return array_values(array_filter($array, function ($item) use($key, $value, $op){
+
+        $item_cmp = isset($item[$key]) ? $item[$key] : null;
+
+        if (is_string($cb) && is_callable($cb)) {
+            $item_cmp = call_user_func($cb, $item_cmp);
+        } else if (is_callable($cb)) {
+            $item_cmp = $cb($item_cmp);
+        }
+
         switch($op) {
             case '===':
-                return $item[$key] === $value;
+                return $item_cmp === $value;
                 break;
             case '==':
-                return $item[$key] == $value;
+                return $item_cmp == $value;
                 break;
             case '!=':
-                return $item[$key] != $value;
+                return $item_cmp != $value;
                 break;
             case '!==':
-                return $item[$key] !== $value;
+                return $item_cmp !== $value;
                 break;
             case '>':
-                return $item[$key] > $value;
+                return $item_cmp > $value;
                 break;
             case '<':
-                return $item[$key] < $value;
+                return $item_cmp < $value;
                 break;
+            case 'in_array':
+                return in_array($item_cmp, $value);
             default:
-                return strtolower($item[$key]) == strtolower($value);
+                return strtolower($item_cmp) == strtolower($value);
         }
     }));
 }
 
 /**
- * Function to filter an arrar of arrays by value of a given key
+ * Function to filter an arrar of arrays by value of a given key. If the param does not exists it takes the value NULL.
+ * The $cb is applied if it is set and it is a callable function
  * @var $array Array of arrays to search
  * @var $param the object attribute to compare with $value
  * @var $value the expected value
  * @var $op the operator to compare with. It should be as string
+ * @var $cb A callback for the value of the $param value in the object (of the array)
  * @return boolean
  */
-function filter_array_object_value($array, $param, $value, $op='default') {
+function filter_array_object_value($array, $param, $value, $op='default', $cb = null) {
     return array_values(array_filter($array, function ($item) use($param, $value, $op){
+
+        $item_cmp = isset($item->{$param})?isset($item->{$param}):null;
+
+        if (is_string($cb)) {
+            $item_cmp = call_user_func($cb, $item_cmp);
+        } else if (is_callable($cb)) {
+            $item_cmp = $cb($item_cmp);
+        }
+
         switch($op) {
+            case '!==':
+                return $itemp_cmp !== $value;
+                break;
+            case '!=':
+                return $itemp_cmp != $value;
+                break;
             case '===':
-                return $item->{$param} === $value;
+                return $itemp_cmp === $value;
                 break;
             case '==':
-                return $item->{$param} == $value;
+                return $itemp_cmp == $value;
                 break;
             case '>':
-                return $item->{$param} > $value;
+                return $itemp_cmp > $value;
                 break;
             case '<':
-                return $item->{$param} < $value;
+                return $itemp_cmp < $value;
+                break;
+            case 'in_array':
+                return in_array($item_cmp, $value);
                 break;
             default:
-                return strtolower($item->{$param}) == strtolower($value);
+                return strtolower($itemp_cmp) == strtolower($value);
         }
     }));
 }

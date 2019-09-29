@@ -68,6 +68,7 @@ if (!$device_unifi_info) {
 
 
 // <set_radius_user_in_unifi>
+/* Commented because unifi can do this by its own right now
 // Set the user the user that is using the device in the unifi
 // First is there is no name, we will use the hostname after the user
 $previousDeviceName = (isset($device_unifi_info->name)?$device_unifi_info->name:$device_unifi_info->hostname);
@@ -83,6 +84,7 @@ $fmtUsername = preg_quote(sprintf($nameFmt, $FRUsername)); // Comparison Name
 if (!preg_match("/(${fmtUsername})+/is", $previousDeviceName)) { // The user was no set previously
     $unifi_connection -> set_sta_name($device_unifi_info->_id, sprintf($finalNameFmt, $FRUsername, $previousDeviceName));
 }
+//*/
 // </set_radius_user_in_unifi>
 
 

@@ -38,7 +38,7 @@ $unifi_bad_users_other_network = array_values(array_filter($clients, 'check_clie
 if(count($unifi_bad_users_other_network) > 0) {
     array_map(function($client) use ($unifi_connection) {
         $unifi_connection->set_usergroup($client->_id, '');
-    });
+    }, $clients);
 }
 
 $clients = null;

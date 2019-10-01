@@ -312,7 +312,7 @@ function filter_array_key_value($array, $key, $value, $op='default', $cb = null)
 
         $item_cmp = isset($item[$key]) ? $item[$key] : null;
 
-        if (is_string($cb) && is_callable($cb)) {
+        if (isset($cb) && is_string($cb) && is_callable($cb)) {
             $item_cmp = call_user_func($cb, $item_cmp);
         } else if (isset($cb) && is_callable($cb)) {
             $item_cmp = $cb($item_cmp);
@@ -360,7 +360,7 @@ function filter_array_object_value($array, $param, $value, $op='default', $cb = 
 
         $item_cmp = isset($item->{$param})?isset($item->{$param}):null;
 
-        if (is_string($cb)) {
+        if (isset($cb) && is_string($cb) && is_callable($cb)) {
             $item_cmp = call_user_func($cb, $item_cmp);
         } else if (isset($cb) && is_callable($cb)) {
             $item_cmp = $cb($item_cmp);
@@ -368,22 +368,22 @@ function filter_array_object_value($array, $param, $value, $op='default', $cb = 
 
         switch($op) {
             case '!==':
-                return $itemp_cmp !== $value;
+                return $item_cmp !== $value;
                 break;
             case '!=':
-                return $itemp_cmp != $value;
+                return $item_cmp != $value;
                 break;
             case '===':
-                return $itemp_cmp === $value;
+                return $item_cmp === $value;
                 break;
             case '==':
-                return $itemp_cmp == $value;
+                return $item_cmp == $value;
                 break;
             case '>':
-                return $itemp_cmp > $value;
+                return $item_cmp > $value;
                 break;
             case '<':
-                return $itemp_cmp < $value;
+                return $item_cmp < $value;
                 break;
             case 'in_array':
                 return in_array($item_cmp, $value);

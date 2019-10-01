@@ -389,7 +389,7 @@ function filter_array_object_value($array, $param, $value, $op='default', $cb = 
                 return in_array($item_cmp, $value);
                 break;
             default:
-                return strtolower($itemp_cmp) == strtolower($value);
+                return strtolower($item_cmp) == strtolower($value);
         }
     }));
 }

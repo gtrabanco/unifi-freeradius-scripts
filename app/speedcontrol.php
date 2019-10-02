@@ -100,8 +100,9 @@ if (count($attr_speed_usergroup) > 0) {
     // usergroup in the Radius
     //
     // First get the usegroup_id for the given group; parenthesis is just to make it clearer
-    $unifi_user_usergroup = filter_array_object_value($unifi_usegroups, 'name', ($attr_speed_usergroup[0]['value']))[0];
-    $group_id = $unifi_user_usergroup->_id;
+    $unifi_user_usergroup = filter_array_object_value($unifi_usegroups, 'name', ($attr_speed_usergroup[0]['value']));
+    $unifi_user_usergroup = count($unifi_user_usergroup) > 0? $unifi_user_usergroup[0]: $unifi_user_usergroup;
+    $group_id = is_object($unifi_user_usergroup) && isset($unifi_user_usergroup->_id) ?$unifi_user_usergroup->_id : null;
 }
 // </fixed_usergroup_by_radius>
 

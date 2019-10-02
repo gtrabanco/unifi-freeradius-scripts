@@ -358,13 +358,15 @@ function filter_array_key_value($array, $key, $value, $op='default', $cb = null)
 function filter_array_object_value($array, $param, $value, $op='default', $cb = null) {
     return array_values(array_filter($array, function ($item) use($param, $value, $op){
 
-        $item_cmp = isset($item->{$param})?isset($item->{$param}):null;
+        $item_cmp = isset($item->{$param}) ? $item->{$param} : null;
 
         if (isset($cb) && is_string($cb) && is_callable($cb)) {
             $item_cmp = call_user_func($cb, $item_cmp);
         } else if (isset($cb) && is_callable($cb)) {
             $item_cmp = $cb($item_cmp);
         }
+
+        
 
         switch($op) {
             case '!==':

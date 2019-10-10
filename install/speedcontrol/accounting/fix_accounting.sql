@@ -9,7 +9,7 @@
 -- Estructura de tabla para la tabla `radacctperiod`
 --
 
-CREATE TABLE `radacctperiod` (
+CREATE TABLE IF NOT EXISTS `radacctperiod` (
   `radacctperiodid` bigint(21) NOT NULL,
   `startperiod` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `username` varchar(64) NOT NULL DEFAULT '',
@@ -106,6 +106,57 @@ CREATE OR REPLACE FUNCTION GET_TIMESTAMP_PERIOD(
 //
 DELIMITER ;
 
+#
+# Function to handle the difference in acctsessiontime
+#
+DELIMITER //
+CREATE OR REPLACE FUNCTION CALC_SESSION_TIME(
+    newtime INT(12) UNSIGNED,
+    oldtime INT(12) UNSIGNED
+) RETURNS INT(12) UNSIGNED
+    DETERMINISTIC
+    BEGIN
+
+        DECLARE calcsessiontime INT UNSIGNED DEFAULT 0;
+
+        SET calcsessiontime = CAST((CAST(newtime AS SIGNED) - CAST(oldtime AS SIGNED)) AS UNSIGNED);
+
+        IF (calcsessiontime < 0) THEN
+            SET calcsessiontime = newtime;
+        END IF;
+        
+        RETURN calcsessiontime;
+
+    END;
+//
+DELIMITER ;
+
+#
+# Function to handle the difference in octets
+#
+DELIMITER //
+CREATE OR REPLACE FUNCTION CALC_OCTETS_DIFF(
+    newinput BIGINT(20),
+    oldinput BIGINT(20)
+) RETURNS BIGINT(20)
+    DETERMINISTIC
+    BEGIN
+
+        DECLARE calcoctets BIGINT(20) DEFAULT 0;
+
+        SET calcoctets = (newinput - oldinput);
+
+        IF (calcoctets < 0) THEN
+            SET calcoctets = newinput;
+        END IF;
+        
+        RETURN calcoctets;
+
+    END;
+//
+DELIMITER ;
+        
+
 
 #
 # This procedure check if the user has any row for billing period
@@ -180,7 +231,7 @@ DELIMITER ;
 
 
 DELIMITER //
-CREATE TRIGGER after_radacct_insert
+CREATE OR REPLACE TRIGGER after_radacct_insert
     AFTER INSERT ON radius.radacct
     FOR EACH ROW
     BEGIN
@@ -201,19 +252,23 @@ DELIMITER ;
 
 
 DELIMITER //
-CREATE TRIGGER before_radacct_update
+CREATE OR REPLACE TRIGGER before_radacct_update
     BEFORE UPDATE ON radius.radacct
     FOR EACH ROW
     BEGIN
+
+        DECLARE calcsessiontime INT UNSIGNED DEFAULT 0;
+        DECLARE calcinputoctects BIGINT;
+        DECLARE calcoutputoctects BIGINT;
 
         CALL INSERT_OR_UPDATE_PERIOD_BILLING(
                 'hourly',
                 NEW.username,
                 NEW.realm,
                 NEW.acctupdatetime,
-                ABS(NEW.acctsessiontime - OLD.acctsessiontime),
-                ABS(NEW.acctinputoctets - OLD.acctinputoctets),
-                ABS(NEW.acctoutputoctets - OLD.acctoutputoctets));
+                CALC_SESSION_TIME(NEW.acctsessiontime, OLD.acctsessiontime),
+                CALC_OCTETS_DIFF(NEW.acctinputoctets, OLD.acctinputoctets),
+                CALC_OCTETS_DIFF(NEW.acctoutputoctets, OLD.acctoutputoctets));
 
     END //
 

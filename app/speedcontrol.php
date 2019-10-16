@@ -69,8 +69,6 @@ if (count($attr_speed_usergroup) > 0) {
     $unifi_user_usergroup = filter_array_object_value($unifi_usegroups, 'name', ($attr_speed_usergroup[0]['value']));
     $unifi_user_usergroup = count($unifi_user_usergroup) > 0? $unifi_user_usergroup[0]: $unifi_user_usergroup;
     $group_id = is_object($unifi_user_usergroup) && isset($unifi_user_usergroup->_id) ?$unifi_user_usergroup->_id : null;
-
-    echo "\nThe user has specific group id: $group_id\n";
 }
 // </fixed_usergroup_by_radius>
 
@@ -101,6 +99,7 @@ if (isset($reduced_speed_group) && count($reduced_speed_group) < 1 && isset($spe
 // First we get the values
 $usegroup_reduced_speed_name = isset($reduced_speed_group) && isset($reduced_speed_group[0])?$reduced_speed_group[0]['value']:null;
 $unifi_reduced_usergroup = !empty($usegroup_reduced_speed_name)?filter_array_object_value($unifi_usegroups, 'name', $usegroup_reduced_speed_name):array();
+
 
 // If we specified in env that unifi prevail over all is defined and a value considered true by PHP then
 // If the admin has defined a custom group for the device in the unifi we won't change
@@ -147,6 +146,7 @@ if($prevail_unifi
 $user_id  = $device_unifi_info->_id;
 $unifi_connection->set_usergroup($user_id, $group_id);
 // </set_the_final_usergroup>
+
 
 $pdo = null; // Good bye MySQL!
 echo "ok";

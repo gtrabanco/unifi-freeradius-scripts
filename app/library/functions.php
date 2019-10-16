@@ -233,7 +233,7 @@ function check_user_limits($username,
     // positive if there is no limit for any kind of traffic
     $check_download = $max_speed_download_data > 0 && $max_speed_download_data < $downloaded_data;
     $check_upload   = $max_speed_upload_data > 0 && $max_speed_upload_data < $uploaded_data;
-    $check_total    = $total_data > 0 && $max_speed_total_data < $total_data;
+    $check_total    = $max_speed_total_data > 0 && $max_speed_total_data < $total_data;
 
     return  $check_download || $check_upload || $check_total;
 }

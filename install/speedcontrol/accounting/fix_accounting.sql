@@ -257,10 +257,6 @@ CREATE OR REPLACE TRIGGER before_radacct_update
     FOR EACH ROW
     BEGIN
 
-        DECLARE calcsessiontime INT UNSIGNED DEFAULT 0;
-        DECLARE calcinputoctects BIGINT;
-        DECLARE calcoutputoctects BIGINT;
-
         CALL INSERT_OR_UPDATE_PERIOD_BILLING(
                 'hourly',
                 NEW.username,

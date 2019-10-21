@@ -85,12 +85,8 @@ $speedcontrol_period = filter_array_key_value($user_reply_attributes, 'attribute
 
 // We will check if there is the minimum configuration for apply a reduced speed which is
 // a group of reduced speed and period
-if (isset($reduced_speed_group) && count($reduced_speed_group) < 1 && isset($speedcontrol_period) && count($speedcontrol_period) < 1) {
-    //die('There is not enough configuration to apply the speed control by traffic consumption.');
+$check_valid_conf_reduced_speed = !(isset($reduced_speed_group) && count($reduced_speed_group) < 1 && isset($speedcontrol_period) && count($speedcontrol_period) < 1);
 
-    echo "ok";
-    exit(0);
-}
 // </check_if_user_has_reduced_speed_usergroup>
 
 // <check_if_user_reduced_speed_usergroup_exists_in_unifi_and_limits>
@@ -104,7 +100,8 @@ $unifi_reduced_usergroup = !empty($usegroup_reduced_speed_name)?filter_array_obj
 // If we specified in env that unifi prevail over all is defined and a value considered true by PHP then
 // If the admin has defined a custom group for the device in the unifi we won't change
 // the speed. But if the group is the reduced speed we will continue the process.
-if($prevail_unifi
+if( $check_valid_conf_reduced_speed
+  && $prevail_unifi
   && isset($device_unifi_info->usergroup_id)
   && strlen($device_unifi_info->usergroup_id) > 0
   && $device_unifi_info->usergroup_id !== $unifi_reduced_usergroup[0]->_id) { // This last check if the
@@ -115,7 +112,7 @@ if($prevail_unifi
     //die('The user has a custom group so we will not change the speed group for the device.');
     $group_id = $device_unifi_info->usergroup_id; //Assigning the current value to the device
 
-} else if (count($unifi_reduced_usergroup) > 0) {
+} else if ($check_valid_conf_reduced_speed && count($unifi_reduced_usergroup) > 0) {
     // If there is any reduced group we can check
     // if we must reduce the speed of the user
 

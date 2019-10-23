@@ -1,6 +1,6 @@
 <?php
 
-max_execution_time(15);
+set_time_limit(20);
 
 set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__);
 

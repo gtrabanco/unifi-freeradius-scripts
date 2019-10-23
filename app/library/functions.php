@@ -209,7 +209,7 @@ function check_user_limits($username,
     $sql = "SELECT IFNULL(SUM(acctinputoctets),0) as uploaddata, 
                 IFNULL(SUM(acctoutputoctets),0) as downloaddata 
             FROM radacct WHERE username = ? AND 
-                UNIX_TIMESTAMP(acctstarttime) + acctsessiontime >= GET_TIMESTAMP_PERIOD( ? , NOW())";
+                UNIX_TIMESTAMP(acctstarttime) + acctsessiontime >= UNIX_TIMESTAMP(GET_TIMESTAMP_PERIOD( ? , NOW()))";
 
     /*/
     $sql = "SELECT IFNULL(SUM(acctinputoctets),0) as uploaddata, 
@@ -230,9 +230,9 @@ function check_user_limits($username,
     $total_data      = $downloaded_data + $uploaded_data;
 
     // Check if the maximums are right before check them
-    $max_speed_download_data = empty($max_speed_download_data) || !is_int($max_speed_download_data) ? 0 : (int)$max_speed_download_data;
-    $max_speed_upload_data   = empty($max_speed_upload_data) || !is_int($max_speed_upload_data) ? 0 : (int)$max_speed_upload_data;
-    $max_speed_total_data    = empty($max_speed_total_data) || !is_int($max_speed_total_data) ? 0 : (int)$max_speed_total_data;
+    $max_speed_download_data = empty($max_speed_download_data) ? 0 : (int)$max_speed_download_data;
+    $max_speed_upload_data   = empty($max_speed_upload_data) ? 0 : (int)$max_speed_upload_data;
+    $max_speed_total_data    = empty($max_speed_total_data) ? 0 : (int)$max_speed_total_data;
 
     // Check if the user has overpassed the limits
     // We will check if the maximum is distinc of 0 because we do not want a false

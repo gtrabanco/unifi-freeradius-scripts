@@ -37,7 +37,7 @@ $pdo = pdoConnectDB();
 $unifi_connection = loginUnifi();
 
 // Getting the params for the user
-$user_reply_attributes = get_reply_attribute_values_for_user2($FRUsername);
+$user_reply_attributes = get_reply_attribute_values_for_user($FRUsername);
 
 // Getting the info for the user device because
 // unifi controller know about devices and not

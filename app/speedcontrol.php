@@ -1,6 +1,6 @@
 <?php
 
-set_time_limit(20);
+set_time_limit(8); // Freeradius does not allow all to exec a script more than 10 secs
 
 set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__);
 
@@ -23,7 +23,8 @@ $attr_max_speed_total_data     = getenv('MAX_SPEED_TOTAL_DATA');
 $attr_reduced_speed_usergroup = getenv('REDUCED_SPEED_USERGROUP');
 $attr_speed_reset_period = getenv('REDUCED_SPEED_RESET_PERIOD');
 
-$prevail_unifi = (bool)getenv('PREVAIL_UNIFI');
+$prevail_unifi = (in_array(strtolower(getenv('PREVAIL_UNIFI')), array('on', '1', 'yes')))
+                ? true : false ;
 
 
 $reply_attribute_fixed_speed_usergroup = getenv('SPEED_USERGROUP');
@@ -36,7 +37,7 @@ $pdo = pdoConnectDB();
 $unifi_connection = loginUnifi();
 
 // Getting the params for the user
-$user_reply_attributes = get_reply_attribute_values_for_user($FRUsername);
+$user_reply_attributes = get_reply_attribute_values_for_user2($FRUsername);
 
 // Getting the info for the user device because
 // unifi controller know about devices and not
@@ -48,7 +49,7 @@ $unifi_usegroups = $unifi_connection->list_usergroups();
 $device_unifi_info = $unifi_connection->stat_client($device_mac);
 $device_unifi_info = is_array($device_unifi_info) && count($device_unifi_info) > 0 ? $device_unifi_info[0]:array();
 
-// If we dont have device we finish
+// If we dont have device we finish, nothing we can do if the mac does not exist in unifi
 if (!$device_unifi_info) {
     //die('Not device to modify the speed: ' . $device_mac . "\n");
 
@@ -98,19 +99,11 @@ $check_valid_conf_reduced_speed = !(isset($reduced_speed_group) && count($reduce
 $usegroup_reduced_speed_name = isset($reduced_speed_group) && isset($reduced_speed_group[0])?$reduced_speed_group[0]['value']:null;
 $unifi_reduced_usergroup = !empty($usegroup_reduced_speed_name)?filter_array_object_value($unifi_usegroups, 'name', $usegroup_reduced_speed_name):array();
 
-
 // If we specified in env that unifi prevail over all is defined and a value considered true by PHP then
 // If the admin has defined a custom group for the device in the unifi we won't change
 // the speed. But if the group is the reduced speed we will continue the process.
-if( $check_valid_conf_reduced_speed
-  && $prevail_unifi
-  && isset($device_unifi_info->usergroup_id)
-  && strlen($device_unifi_info->usergroup_id) > 0
-  && $device_unifi_info->usergroup_id !== $unifi_reduced_usergroup[0]->_id) { // This last check if the
-                                    // defined usergroup is different from the downspeed usergroup
-                                    // Because if is the slower group we should check later if the
-                                    // user must be in the default group. Because maybe we are in a
-                                    // different billing period
+if( $prevail_unifi
+  && isset($device_unifi_info->usergroup_id) && strlen($device_unifi_info->usergroup_id) > 0) { 
     //die('The user has a custom group so we will not change the speed group for the device.');
     $group_id = $device_unifi_info->usergroup_id; //Assigning the current value to the device
 

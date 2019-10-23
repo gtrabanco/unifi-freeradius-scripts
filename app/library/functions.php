@@ -207,11 +207,19 @@ function check_user_limits($username,
     }
 
     // Make the sql for the user and stablished period
+
+    $sql = "SELECT IFNULL(SUM(acctinputoctets),0) as uploaddata, 
+                IFNULL(SUM(acctoutputoctets),0) as downloaddata 
+            FROM radacct WHERE username = ? AND 
+                UNIX_TIMESTAMP(acctstarttime) + acctsessiontime >= GET_TIMESTAMP_PERIOD( ? , NOW())";
+
+    /*/
     $sql = "SELECT IFNULL(SUM(acctinputoctets),0) as uploaddata, 
                     IFNULL(SUM(acctoutputoctets),0) as downloaddata 
                 FROM ${tbl_radacctperiod} 
                 WHERE username = ?
                 AND startperiod >= GET_TIMESTAMP_PERIOD( ? , NOW())";
+    //*/
     $stm = $pdo->prepare($sql);
     $stm -> execute([$username, $max_speed_period]);
 

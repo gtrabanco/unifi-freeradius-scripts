@@ -81,7 +81,6 @@ function get_check_attribute_value($username, $attribute) {
     $tbl_radcheck      = getenv('CONFIG_DB_TBL_RADCHECK');
     $tbl_radusergroup  = getenv('CONFIG_DB_TBL_RADUSERGROUP');
     $tbl_radgroupcheck = getenv('CONFIG_DB_TBL_RADGROUPCHECK');
-    $tbl_radacctperiod = getenv('CONFIG_DB_TBL_RADACCTPERIOD');
     
     $sql_user = sprintf('SELECT value FROM %s
         WHERE username=? AND attribute=?', $tbl_radcheck);
@@ -119,7 +118,6 @@ function get_reply_attribute_values_for_user($username) {
     $tbl_radreply      = getenv('CONFIG_DB_TBL_RADREPLY');
     $tbl_radusergroup  = getenv('CONFIG_DB_TBL_RADUSERGROUP');
     $tbl_radgroupreply = getenv('CONFIG_DB_TBL_RADGROUPREPLY');
-    $tbl_radacctperiod = getenv('CONFIG_DB_TBL_RADACCTPERIOD');
     
     $sql_user = "SELECT attribute,value FROM ${tbl_radreply} WHERE username=?";
 

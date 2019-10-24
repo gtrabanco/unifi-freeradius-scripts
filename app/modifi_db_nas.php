@@ -43,8 +43,8 @@ if (!empty($unifi_ip_address)) {
     $sql .= sprintf(' AND nasname <> ?', $pdo->quote($unifi_ip_address, PDO::PARAM_STR));
 
     // Adding the Unifi controller as device
-    $devices[] = [
-        'config_network' => ['ip' => $unifi_ip_address],
+    $devices[] = (object)[
+        'config_network' => (object)['ip' => $unifi_ip_address],
         'name' => 'UNIFI CONTROLLER',
         'mac'  => getenv('CAPTIVE_PORTAL_NAS_MAC')
     ];

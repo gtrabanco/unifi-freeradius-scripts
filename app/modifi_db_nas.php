@@ -21,13 +21,11 @@ $dotenv = Dotenv\Dotenv::create(join(array(__DIR__, 'config'), DIRECTORY_SEPARAT
 $dotenv->load();
 
 // Connect to database and Unifi
-$pdo = pdoConnectDb();
+//$pdo = pdoConnectDb();
 $unifi_connection = loginUnifi();
-
 
 // The lisf of the devices
 $devices = $unifi_connection->list_devices();
-
 
 // We want a list of all NAS mac address
 $unifi_devices_mac_addresses = array_values(array_map(function($device) use ($pdo) {
@@ -36,7 +34,14 @@ $unifi_devices_mac_addresses = array_values(array_map(function($device) use ($pd
 }, $devices));
 
 // First we want to delete all NAS that are not active
-$sql = sprintf("DELETE FROM %s WHERE macaddress NOT IN (%s)", getenv('CONFIG_DB_TBL_RADNAS'), join(',', $unifi_devices_mac_addresses));
+$unifi_ip_address = getenv('CAPTIVE_PORTAL_NAS_IP');
+
+$sql = 'DELETE FROM %s WHERE macaddress NOT IN (%s)';
+
+$sql = sprintf('DELETE FROM %s WHERE macaddress NOT IN (%s)', getenv('CONFIG_DB_TBL_RADNAS'), join(',', $unifi_devices_mac_addresses));
+if (!empty($unifi_ip_address)) {
+    $sql .= sprintf(' AND nasname <> ?', $pdo->quote($unifi_ip_address, PDO::PARAM_STR));
+}
 
 $stm = $pdo->prepare($sql);
 $stm -> execute([join(",",$unifi_devices_mac_addresses)]);

@@ -21,7 +21,7 @@ $dotenv = Dotenv\Dotenv::create(join(array(__DIR__, 'config'), DIRECTORY_SEPARAT
 $dotenv->load();
 
 // Connect to database and Unifi
-//$pdo = pdoConnectDb();
+$pdo = pdoConnectDb();
 $unifi_connection = loginUnifi();
 
 // The lisf of the devices

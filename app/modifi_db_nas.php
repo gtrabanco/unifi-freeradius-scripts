@@ -41,6 +41,13 @@ $sql = 'DELETE FROM %s WHERE macaddress NOT IN (%s)';
 $sql = sprintf('DELETE FROM %s WHERE macaddress NOT IN (%s)', getenv('CONFIG_DB_TBL_RADNAS'), join(',', $unifi_devices_mac_addresses));
 if (!empty($unifi_ip_address)) {
     $sql .= sprintf(' AND nasname <> ?', $pdo->quote($unifi_ip_address, PDO::PARAM_STR));
+
+    // Adding the Unifi controller as device
+    $devices[] = [
+        'config_network' => ['ip' => $unifi_ip_address],
+        'name' => 'UNIFI CONTROLLER',
+        'mac'  => getenv('CAPTIVE_PORTAL_NAS_MAC')
+    ];
 }
 
 $stm = $pdo->prepare($sql);

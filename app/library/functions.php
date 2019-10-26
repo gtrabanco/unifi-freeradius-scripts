@@ -289,21 +289,6 @@ function get_clients_no_auth_by_users($client) {
 }
 
 /**
- * Check the clients that are not in the radius network
- * @var $client The Unifi client
- * @return boolean
- */
-function check_clients_no_radius_network($client) {
-    $radius_network = strtolower(trim(getenv('RADIUS_NETWORK_CHECK')));
-
-    $client_essid   = isset($client->essid)?strtolower(trim($client->essid)):'';
-    $client_network = isset($client->network)?strtolower(trim($client->network)):'';
-
-    return strlen($client_essid) > 0 && $client_essid !== $radius_network
-        || strlen($client_network) > 0 && $client_network !== $radius_network;
-}
-
-/**
  * Function to filter an arrar of arrays by value of a given key.
  * If the variable does not exists then it takes the value "null".
  * @var $array Array of arrays to search

@@ -38,12 +38,13 @@ if ($argc < 2) {
 
 // Connect to unifi
 $unifi_connection = loginUnifi();
+$unifi_connection->set_debug(false);
 
 // The lisf of the devices
 $clients = $unifi_connection->list_clients();
 
 // Reconnect all clients in the network
-array_filter($clients, function ($client) use ($network) {
+array_filter($clients, function ($client) use ($network, $unifi_connection) {
     
 
     $client_essid   = isset($client->essid)?strtolower(trim($client->essid)):'';
@@ -51,6 +52,6 @@ array_filter($clients, function ($client) use ($network) {
 
     if( strlen($client_essid) > 0 && $client_essid !== $network
         || strlen($client_network) > 0 && $client_network !== $network) {
-            $unifi_connection->reconnect_sta($client->mac);
+            (bool) $unifi_connection->reconnect_sta($client->mac);
     }
 });

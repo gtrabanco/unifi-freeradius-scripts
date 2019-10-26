@@ -30,17 +30,6 @@ if(count($unifi_missed_connected_clients) > 0) {
     }, $unifi_missed_connected_clients);
 }
 
-// Get the bad users in other networks and reset they speed limit
-$speed_groups_reset = explode(',', getenv('RADIUS_BAD_USERS_SPEED'));
-
-$unifi_bad_users_other_network = array_values(array_filter($clients, 'check_clients_no_radius_network'));
-
-if(count($unifi_bad_users_other_network) > 0) {
-    array_map(function($client) use ($unifi_connection) {
-        $unifi_connection->set_usergroup($client->_id, '');
-    }, $clients);
-}
-
 $clients = null;
 $unifi_connect = null;
 $pdo = null;

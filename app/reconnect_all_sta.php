@@ -50,8 +50,8 @@ array_filter($clients, function ($client) use ($network, $unifi_connection) {
     $client_essid   = isset($client->essid)?strtolower(trim($client->essid)):'';
     $client_network = isset($client->network)?strtolower(trim($client->network)):'';
 
-    if( strlen($client_essid) > 0 && $client_essid !== $network
-        || strlen($client_network) > 0 && $client_network !== $network) {
+    if( strlen($client_essid) > 0 && $client_essid == $network
+        || strlen($client_network) > 0 && $client_network == $network) {
             if(!$unifi_connection->reconnect_sta($client->mac)) {
                 $mac = $client->mac;
                 fwrite(STDERR, "Could not reconnect $mac\n");

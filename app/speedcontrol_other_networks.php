@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * This script change the speed usergroup of unifi for those clients
+ * that have changed their default usergroup due to radius control
+ * 
+ * 
+ *              gabi.io
+ * 
+ * @author Gabriel Trabanco Llano <gtrabanco@fwok.org>
+ */
+
 set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__);
 
 require_once('vendor/autoload.php');
@@ -11,7 +21,6 @@ $dotenv->load();
 // Connect to database and Unifi
 $unifi_connection = loginUnifi();
 
-//*
 // Unifi connected devices and freeradius users
 $clients = $unifi_connection->list_clients();
 
@@ -23,11 +32,9 @@ $reset_usegroups_unifi = array_map(function ($group) {
     return $group->_id;
 }, filter_array_object_value($unifi_connection->list_usergroups(), 'name', $speed_groups_reset, 'in_array'));
 
-
-
 // Row per row exploring modified usergroup in other networks to reset their speed
 array_map(function($client) use ($unifi_connection, $reset_usegroups_unifi) {
-    $radius_network = strtolower(trim(getenv('RADIUS_NETWORK_CHECK')));
+    $radius_network = strtolower(trim(getenv('RADIUS_USED_USERGROUPS')));
 
     $client_essid   = isset($client->essid)?strtolower(trim($client->essid)):'';
     $client_network = isset($client->network)?strtolower(trim($client->network)):'';

@@ -15,8 +15,7 @@
  */
 
 
-set_time_limit(30); //Shoul be enought, it should take no more
-            //than 2/3 seconds reconnect all clients
+set_time_limit(0);
 
 set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__);
 

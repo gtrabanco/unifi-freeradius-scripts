@@ -52,6 +52,11 @@ array_filter($clients, function ($client) use ($network, $unifi_connection) {
 
     if( strlen($client_essid) > 0 && $client_essid !== $network
         || strlen($client_network) > 0 && $client_network !== $network) {
-            (bool) $unifi_connection->reconnect_sta($client->mac);
+            if(!$unifi_connection->reconnect_sta($client->mac)) {
+                $mac = $client->mac;
+                fwrite(STDERR, "Could not reconnect $mac\n");
+                $mac = null; //To avoid errors, it should not happen but...
+            }
     }
 });
+exit; // This is a binary

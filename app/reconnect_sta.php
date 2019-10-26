@@ -36,3 +36,4 @@ $unifi_connection = loginUnifi();
 if(!$unifi_connection->reconnect_sta($mac)) {
     fwrite(STDERR, "$mac could not be reconnected\n");
 }
+exit; //This is a binary file

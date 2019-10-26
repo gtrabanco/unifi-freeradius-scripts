@@ -208,8 +208,8 @@ function check_user_limits($username,
 
     $sql = "SELECT IFNULL(SUM(acctinputoctets),0) as uploaddata, 
                 IFNULL(SUM(acctoutputoctets),0) as downloaddata 
-            FROM radacct WHERE username = ? AND 
-                UNIX_TIMESTAMP(acctstarttime) + acctsessiontime >= UNIX_TIMESTAMP(GET_TIMESTAMP_PERIOD( ? , NOW()))";
+            FROM ${tbl_radacctperiod}  WHERE username = ? AND 
+                UNIX_TIMESTAMP(acctstarttime) >= UNIX_TIMESTAMP(GET_TIMESTAMP_PERIOD( ? , NOW()))";
 
     /*/
     $sql = "SELECT IFNULL(SUM(acctinputoctets),0) as uploaddata, 

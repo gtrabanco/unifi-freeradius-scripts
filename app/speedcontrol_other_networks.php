@@ -25,7 +25,7 @@ $unifi_connection = loginUnifi();
 $clients = $unifi_connection->list_clients();
 
 // Get the bad users in other networks and reset they speed limit
-$speed_groups_reset = explode(',', getenv('RADIUS_BAD_USERS_SPEED'));
+$speed_groups_reset = explode(',', getenv('RADIUS_USED_USERGROUPS'));
 $speed_groups_reset = is_array($speed_groups_reset) ? $speed_groups_reset : array($speed_groups_reset);
 
 $reset_usegroups_unifi = array_map(function ($group) {
@@ -34,7 +34,7 @@ $reset_usegroups_unifi = array_map(function ($group) {
 
 // Row per row exploring modified usergroup in other networks to reset their speed
 array_map(function($client) use ($unifi_connection, $reset_usegroups_unifi) {
-    $radius_network = strtolower(trim(getenv('RADIUS_USED_USERGROUPS')));
+    $radius_network = strtolower(trim(getenv('RADIUS_NETWORK_CHECK')));
 
     $client_essid   = isset($client->essid)?strtolower(trim($client->essid)):'';
     $client_network = isset($client->network)?strtolower(trim($client->network)):'';

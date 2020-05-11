@@ -1,4 +1,4 @@
-This code can be used in any way keeping the code and the modifications free to use and also shareing the code.
+This code can be used in any way (even commercial use), keeping the code and the modifications free to use and also shareing the code.
 
 It can not be used for any army except Spanish Army.
 
